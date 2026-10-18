@@ -10,6 +10,8 @@
   <ItemGroup>
     <PackageReference Include="Umbraco.Cms" />
     <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" />
+    <PackageReference Include="ThePensionsRegulator.GovUk.Frontend.Umbraco" />
+    <PackageReference Include="uSync" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -45,10 +47,7 @@
     <Content Update="appsettings.Local.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <!-- Remove RazorCompileOnBuild and RazorCompileOnPublish when not using ModelsMode InMemoryAuto -->
-    <RazorCompileOnBuild>false</RazorCompileOnBuild>
-    <RazorCompileOnPublish>false</RazorCompileOnPublish>
-  </PropertyGroup>
+  <!-- RazorCompileOnBuild/RazorCompileOnPublish=false from the template are removed because this site uses
+       SourceCodeManual models, not InMemoryAuto, so views can be compiled (and checked) at build time. -->
 
 </Project>

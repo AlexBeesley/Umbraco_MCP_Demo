@@ -1,0 +1,44 @@
+﻿@inherits UmbracoViewPage<Home>
+@{
+    var children = Model.Children()?.ToList() ?? [];
+    var contentPages = children.Where(x => x.ContentType.Alias == ContentPage.ModelTypeAlias).ToList();
+    // The panel page is the "success" page that the example forms redirect to, so it is not listed.
+    var componentPages = children
+        .Where(x => x.ContentType.Alias != ContentPage.ModelTypeAlias && x.ContentType.Alias != Panel.ModelTypeAlias)
+        .OrderBy(x => x.Name)
+        .ToList();
+}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">@Model.PageHeading</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Lede))
+        {
+            <p class="govuk-body-l">@Model.Lede</p>
+        }
+
+        <govuk-inset-text>
+            Every page on this site is managed in Umbraco. Sign in to the <a class="govuk-link" href="/umbraco">Umbraco backoffice</a> to edit it.
+        </govuk-inset-text>
+
+        <h2 class="govuk-heading-l">Component examples</h2>
+        <p class="govuk-body">These pages are built from GOV.UK Design System blocks in Umbraco's block list and block grid editors.</p>
+        <ul class="govuk-list govuk-list--spaced">
+            @foreach (var child in componentPages)
+            {
+                <li><a class="govuk-link" href="@child.Url()">@child.Name</a></li>
+            }
+        </ul>
+
+        @if (contentPages.Count > 0)
+        {
+            <h2 class="govuk-heading-l">Content pages</h2>
+            <p class="govuk-body">These pages use ordinary Umbraco properties rendered with GOV.UK Frontend tag helpers.</p>
+            <ul class="govuk-list govuk-list--spaced">
+                @foreach (var child in contentPages)
+                {
+                    <li><a class="govuk-link" href="@child.Url()">@child.Name</a></li>
+                }
+            </ul>
+        }
+    </div>
+</div>

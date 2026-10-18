@@ -1,0 +1,8 @@
+﻿@inherits UmbracoViewPage<CheckboxesViewModel>
+@using (Html.BeginUmbracoForm<CheckboxesSurfaceController>(nameof(CheckboxesSurfaceController.Index), new { }, new { novalidate = "novalidate" }))
+{
+    <partial name="GOVUK/BlockList" model="Model.Page!.Blocks" />
+}
+@section scripts {
+    <partial name="GOVUK/Validation" />
+}

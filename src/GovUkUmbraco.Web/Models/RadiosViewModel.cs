@@ -1,0 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+using Umbraco.Cms.Web.Common.PublishedModels;
+
+namespace GovUkUmbraco.Web.Models
+{
+    public class RadiosViewModel
+    {
+        public Radios? Page { get; set; }
+
+        [Required(ErrorMessage = nameof(Field1))]
+        public string? Field1 { get; set; }
+
+        [Required(ErrorMessage = nameof(Field2))]
+        [RegularExpression("[0-9]+", ErrorMessage = nameof(Field2))]
+        public string? Field2 { get; set; }
+
+        [Required(ErrorMessage = nameof(Field3))]
+        public string? Field3 { get; set; }
+    }
+}

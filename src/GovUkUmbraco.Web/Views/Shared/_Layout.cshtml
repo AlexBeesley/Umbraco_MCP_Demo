@@ -1,0 +1,101 @@
+@inherits UmbracoViewPage<object>
+@* Both GovUk.Frontend.AspNetCore and ThePensionsRegulator.GovUk.Frontend have a <title> tag helper that adds "Error:".
+   The GovUk one fires whenever an error summary is rendered, and the TPR form views always render a hidden one for
+   client-side validation, so every form page would be titled "Error:". Keep only the TPR one, which checks ModelState. *@
+@removeTagHelper GovUk.Frontend.AspNetCore.TagHelpers.TitleTagHelper, GovUk.Frontend.AspNetCore
+@{
+    const string serviceName = "GOV.UK Umbraco prototype";
+
+    // Form pages use view models rather than IPublishedContent, so always ask Umbraco for the routed page.
+    var currentPage = Umbraco.AssignedContentItem;
+    var home = currentPage.Root();
+    var isHome = currentPage.Id == home.Id;
+
+    // Typed pages (home, contentPage) have a pageHeading property. Block-based example pages
+    // carry their H1 in a "page heading" block, which PageHeadingOrName() finds.
+    var pageHeading = currentPage.Value<string>("pageHeading");
+    if (string.IsNullOrWhiteSpace(pageHeading))
+    {
+        pageHeading = currentPage is PublishedContentModel model ? model.PageHeadingOrName() : currentPage.Name;
+    }
+
+    // The "Error:" prefix for pages with validation errors is added by the <title> tag helper (see above),
+    // and kept in sync by the client-side validation script.
+    var title = (isHome ? serviceName : $"{pageHeading} – {serviceName}") + " – GOV.UK";
+
+    var aboutPage = home.Children()?.FirstOrDefault(x => x.ContentType.Alias == "contentPage");
+}
+<!DOCTYPE html>
+<html lang="en" class="govuk-template">
+<head>
+    <meta charset="utf-8" />
+    <title>@title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1d70b8" />
+    <link rel="icon" sizes="48x48" href="/assets/images/favicon.ico" />
+    <link rel="icon" sizes="any" href="/assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="mask-icon" href="/assets/images/govuk-icon-mask.svg" color="#1d70b8" />
+    <link rel="apple-touch-icon" href="/assets/images/govuk-icon-180.png" />
+    <link rel="manifest" href="/assets/manifest.json" />
+    <partial name="GOVUK/UmbracoHead" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @RenderSection("head", required: false)
+</head>
+<body class="govuk-template__body">
+    <partial name="GOVUK/BodyOpen" />
+
+    <govuk-skip-link href="#main-content">Skip to main content</govuk-skip-link>
+
+    <govuk-header home-page-url="/" />
+
+    <govuk-service-navigation service-name="@serviceName" service-url="@home.Url()">
+        @* GovUk.Frontend.AspNetCore 4.1.0 doesn't apply GOV.UK Frontend's defaults for these when they are omitted,
+           which leaves the mobile menu toggle without aria-controls and breaks the component's JavaScript. *@
+        <govuk-service-navigation-nav id="navigation" menu-button-text="Menu" label="Menu">
+            <govuk-service-navigation-nav-item href="@home.Url()" current="@isHome">Home</govuk-service-navigation-nav-item>
+            @if (aboutPage is not null)
+            {
+                <govuk-service-navigation-nav-item href="@aboutPage.Url()" current="@(aboutPage.Id == currentPage.Id)">@aboutPage.Name</govuk-service-navigation-nav-item>
+            }
+        </govuk-service-navigation-nav>
+    </govuk-service-navigation>
+
+    @* The phase banner tag helper renders its own govuk-width-container, so it sits outside the page's one. *@
+    <govuk-phase-banner>
+        <govuk-phase-banner-tag>Prototype</govuk-phase-banner-tag>
+        This is a local proof of concept. It is not a real government service.
+    </govuk-phase-banner>
+
+    <div class="govuk-width-container">
+        @if (!isHome)
+        {
+            <govuk-breadcrumbs>
+                @foreach (var ancestor in currentPage.Ancestors().Reverse())
+                {
+                    <govuk-breadcrumbs-item href="@ancestor.Url()">@ancestor.Name</govuk-breadcrumbs-item>
+                }
+                <govuk-breadcrumbs-item>@currentPage.Name</govuk-breadcrumbs-item>
+            </govuk-breadcrumbs>
+        }
+
+        <main class="govuk-main-wrapper" id="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <govuk-footer>
+        <govuk-footer-meta>
+            <govuk-footer-meta-items>
+                @if (aboutPage is not null)
+                {
+                    <govuk-footer-meta-item href="@aboutPage.Url()">@aboutPage.Name</govuk-footer-meta-item>
+                }
+                <govuk-footer-meta-item href="/umbraco">Umbraco backoffice</govuk-footer-meta-item>
+            </govuk-footer-meta-items>
+        </govuk-footer-meta>
+    </govuk-footer>
+
+    <partial name="GOVUK/BodyClosing" />
+    @RenderSection("scripts", required: false)
+</body>
+</html>

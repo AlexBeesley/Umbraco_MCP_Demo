@@ -1,0 +1,8 @@
+﻿@inherits UmbracoViewPage<RadiosViewModel>
+@using (Html.BeginUmbracoForm<RadiosSurfaceController>(nameof(RadiosSurfaceController.Index), new { }, new { novalidate = "novalidate" }))
+{
+    <partial name="GOVUK/BlockList" model="Model.Page!.Blocks" />
+}
+@section scripts {
+    <partial name="GOVUK/Validation" />
+}

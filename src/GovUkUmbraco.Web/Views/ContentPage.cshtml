@@ -1,0 +1,46 @@
+﻿@inherits UmbracoViewPage<ContentPage>
+@using ThePensionsRegulator.GovUk.Frontend.Typography
+@{
+    var heading = string.IsNullOrWhiteSpace(Model.PageHeading) ? Model.Name : Model.PageHeading;
+    // Adds govuk-body, govuk-heading-*, govuk-list and govuk-link classes to the rich text markup.
+    var bodyHtml = GovUkTypography.Apply(Model.BodyText?.ToHtmlString());
+    var childPages = Model.Children()?.ToList() ?? [];
+}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">@heading</h1>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Lede))
+        {
+            <p class="govuk-body-l">@Model.Lede</p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.InsetText))
+        {
+            <govuk-inset-text>@Model.InsetText</govuk-inset-text>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(bodyHtml))
+        {
+            @Html.Raw(bodyHtml)
+        }
+
+        @if (childPages.Count > 0)
+        {
+            <h2 class="govuk-heading-m">In this section</h2>
+            <ul class="govuk-list">
+                @foreach (var child in childPages)
+                {
+                    <li><a class="govuk-link" href="@child.Url()">@child.Name</a></li>
+                }
+            </ul>
+        }
+
+        <govuk-summary-list>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Last updated</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.UpdateDate.ToString("d MMMM yyyy")</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+        </govuk-summary-list>
+    </div>
+</div>

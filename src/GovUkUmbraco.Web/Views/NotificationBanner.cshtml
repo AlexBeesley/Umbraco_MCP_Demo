@@ -1,0 +1,6 @@
+﻿@inherits UmbracoViewPage<NotificationBanner>
+<partial name="GOVUK/BlockList" model="Model.Blocks" />
+@section scripts {
+    @* Wires up the "dismiss" buttons used in the example content *@
+    <script src="/js/NotificationBanner.js" type="module" asp-append-version="true"></script>
+}

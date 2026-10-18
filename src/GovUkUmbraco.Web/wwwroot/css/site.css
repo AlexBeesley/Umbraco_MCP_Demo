@@ -1,0 +1,7 @@
+/* Site-specific styles. Also loaded by the rich text editor data types in the backoffice. */
+
+/* The panel component uses white text on a coloured background. Rich text in a panel body is given
+   govuk-body, which sets near-black text and fails colour contrast (WCAG 1.4.3), so inherit instead. */
+.govuk-panel__body .govuk-body {
+    color: inherit;
+}
