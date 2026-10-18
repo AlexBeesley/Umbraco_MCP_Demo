@@ -2,4 +2,6 @@
 .env
 *.local.json
 appsettings.Local.json
-.vscode/mcp.local.json
+node_modules/
+tests/e2e/screenshots/
+.certs/

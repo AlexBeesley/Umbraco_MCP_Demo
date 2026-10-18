@@ -1,12 +1,13 @@
 // Runs axe-core against every page linked from the home page, plus each form page after an
 // empty submit (so the GOV.UK error summary and error messages are checked too).
 //
-//   npm run a11y                 # BASE_URL defaults to https://localhost:44398
+//   npm run test:a11y            # BASE_URL defaults to https://localhost:44398
 //
 // Automated checks find roughly a third of WCAG issues; see the README for the manual checks that were done.
 import { chromium } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
 import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const baseUrl = process.env.BASE_URL ?? 'https://localhost:44398';
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'];
@@ -19,7 +20,8 @@ const isKnownUpstreamIssue = v => v.id === 'aria-allowed-attr' && v.nodes.every(
   n.html.includes('govuk-radios__input') &&
   [...n.failureSummary.matchAll(/not allowed: (aria-[a-z]+)/g)].every(m => m[1] === 'aria-expanded'));
 
-mkdirSync('screenshots', { recursive: true });
+const screenshots = fileURLToPath(new URL('./screenshots/', import.meta.url));
+mkdirSync(screenshots, { recursive: true });
 const browser = await chromium.launch();
 const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1280, height: 900 } });
 const page = await context.newPage();
@@ -47,7 +49,7 @@ for (const { path, label, submit } of targets) {
     await Promise.all([page.waitForLoadState('load'), page.locator('main form button[type=submit], main form .govuk-button').first().click()]);
   }
   const name = (path.replace(/\W+/g, '-').replace(/^-|-$/g, '') || 'home') + (submit ? '-errors' : '');
-  await page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
+  await page.screenshot({ path: `${screenshots}${name}.png`, fullPage: true });
 
   const results = await new AxeBuilder({ page }).withTags(wcagTags).analyze();
   const status = response?.status();

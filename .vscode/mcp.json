@@ -1,0 +1,33 @@
+{
+  // Umbraco Developer MCP server for the local site, for VS Code and GitHub Copilot agent mode.
+  // Before starting it: run the site, `npm run mcp:create-api-user`, and export the dev certificate (see README).
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "umbraco-client-secret",
+      "description": "Umbraco API user client secret (run: dotnet user-secrets list --project src/GovUkUmbraco.Web, value of Mcp:UmbracoClientSecret)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "umbraco": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@umbraco-cms/mcp-dev@17.6.11"],
+      "env": {
+        "UMBRACO_BASE_URL": "https://localhost:44398",
+        "UMBRACO_CLIENT_ID": "umbraco-back-office-mcp",
+        "UMBRACO_CLIENT_SECRET": "${input:umbraco-client-secret}",
+        // Keeps the tool count well under GitHub Copilot's per-request limit (the full server has 500+ tools).
+        "UMBRACO_INCLUDE_TOOL_COLLECTIONS": "document,document-type",
+        // The API user can read document types only with Settings access, which also allows changing them.
+        // Hide the schema-changing tools; remove this line if you want the agent to model content types.
+        "UMBRACO_EXCLUDE_TOOLS": "create-document-type,update-document-type,copy-document-type,move-document-type,delete-document-type,create-element-type,create-document-type-folder,update-document-type-folder,delete-document-type-folder",
+        // The MCP SDK disables TLS verification unless NODE_ENV=production. Keep it on and trust the
+        // exported ASP.NET Core development certificate instead.
+        "NODE_ENV": "production",
+        "NODE_EXTRA_CA_CERTS": "${workspaceFolder}/.certs/localhost-dev-cert.pem"
+      }
+    }
+  }
+}

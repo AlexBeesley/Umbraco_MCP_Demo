@@ -487,3 +487,7 @@ umbraco-package-schema.json
 # uSync definitions copied from the ThePensionsRegulator.GovUk.Frontend.Umbraco NuGet package on every build.
 # The package tries to write its own .gitignore here, but on Linux/macOS it comes out empty.
 /uSync/ThePensionsRegulator.GovUk.Frontend.Umbraco/
+
+# uSync exports every change made in Umbraco, including the throwaway page created by `npm run mcp:demo`.
+# Keep it out of source control so a fresh clone still demonstrates the "create" step.
+/uSync/v17/Content/created-by-mcp*.config

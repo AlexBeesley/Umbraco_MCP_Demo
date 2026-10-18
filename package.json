@@ -1,0 +1,21 @@
+{
+  "name": "umbraco-govuk-mcp-poc",
+  "private": true,
+  "type": "module",
+  "description": "Node tooling for the local Umbraco + GOV.UK + MCP proof of concept",
+  "engines": {
+    "node": ">=22.3.0"
+  },
+  "scripts": {
+    "test:smoke": "node tests/e2e/backoffice-smoke.mjs",
+    "test:a11y": "node tests/e2e/a11y.mjs",
+    "mcp:create-api-user": "node scripts/create-mcp-api-user.mjs",
+    "mcp:demo": "node scripts/mcp-demo.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@umbraco-cms/mcp-dev": "17.6.11",
+    "playwright": "1.56.1"
+  }
+}
