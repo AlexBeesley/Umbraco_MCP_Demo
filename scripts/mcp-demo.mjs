@@ -26,7 +26,7 @@ if (!clientSecret) throw new Error('No MCP client secret: run `npm run mcp:creat
 const server = loadMcpServer('umbraco', { 'umbraco-client-secret': clientSecret });
 const baseUrl = server.env.UMBRACO_BASE_URL;
 const devCert = server.env.NODE_EXTRA_CA_CERTS;
-if (!existsSync(devCert)) throw new Error(`Missing ${devCert}: see README "Trusting the development certificate".`);
+if (!existsSync(devCert)) throw new Error(`Missing ${devCert}: run "npm run mcp:create-api-user" to export it.`);
 
 const transport = new StdioClientTransport({
   command: server.command,

@@ -59,7 +59,7 @@ tests/e2e/                   backoffice smoke test, accessibility checks
 - **Component example pages** (Typography, Inset text, Details, Warning text, Notification banner, Summary list, and the Text input / Radios / Checkboxes forms with client- and server-side validation) come from the [example app](https://github.com/thepensionsregulator/govuk-frontend-aspnetcore-extensions/tree/main/GovUk.Frontend.Umbraco.ExampleApp). Editors build them from GOV.UK blocks in the block list / block grid editors. The example's Home, Accordion and Grid pages were left out because they depend on TPR-branded (not GOV.UK) types.
 - **Home** and **Content page** are new: ordinary properties rendered with `<govuk-inset-text>`, `<govuk-summary-list>` and GOV.UK typography.
 - The package's 42 GOV.UK data types and 123 block element types are copied into `uSync/ThePensionsRegulator.GovUk.Frontend.Umbraco/` on each build (gitignored) and imported alongside `uSync/v17/`.
-- After changing document types: Settings › Models Builder › Generate models, then rebuild.
+- After changing document types: Settings › Models Builder › Generate models, then rebuild. (The first boot leaves a gitignored `Models/ModelsBuilder/ood.flag` and a build warning saying models are out of date; the committed models already match, so it can be ignored.)
 
 ## Accessibility (WCAG 2.2 AA)
 
@@ -82,10 +82,9 @@ With the site running:
 ```bash
 npm install
 npm run mcp:create-api-user      # idempotent; --rotate issues a new secret
-dotnet dev-certs https --export-path .certs/localhost-dev-cert.pem --format Pem   # public cert only, gitignored
 ```
 
-This creates, through the same Management API calls the backoffice makes:
+This exports the dev certificate's public part to `.certs/localhost-dev-cert.pem` (gitignored) for the MCP server to trust, and creates, through the same Management API calls the backoffice makes:
 
 | | Setting | Why |
 | --- | --- | --- |

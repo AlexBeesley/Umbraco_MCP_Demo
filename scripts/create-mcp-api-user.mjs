@@ -6,7 +6,12 @@
 //   npm run mcp:create-api-user -- --content-only   # no Settings section (see below)
 //
 // The client secret is stored in the site's .NET user-secrets (Mcp:UmbracoClientSecret), never in the repo.
+// It also exports the ASP.NET Core development certificate (public part only) to .certs/, which the
+// MCP server is told to trust in .vscode/mcp.json.
+import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { adminCredentials, getUserSecret, setUserSecret } from './lib/local-secrets.mjs';
 import { baseUrl, loginToBackoffice } from './lib/backoffice.mjs';
 
@@ -110,6 +115,13 @@ try {
     setUserSecret('Mcp:UmbracoClientSecret', secret);
     console.log(`Created client "${CLIENT_ID}" and stored its secret in user-secrets (Mcp:UmbracoClientSecret)`);
   }
+
+  // Without --no-password, a PEM export contains only the certificate, not the private key.
+  // dev-certs won't create the target directory itself.
+  const certDir = fileURLToPath(new URL('../.certs/', import.meta.url));
+  mkdirSync(certDir, { recursive: true });
+  execFileSync('dotnet', ['dev-certs', 'https', '--export-path', `${certDir}localhost-dev-cert.pem`, '--format', 'Pem'], { stdio: 'ignore' });
+  console.log('Exported the development certificate to .certs/localhost-dev-cert.pem');
 
   console.log(`\nMCP settings for ${baseUrl}:`);
   console.log(`  UMBRACO_CLIENT_ID=${CLIENT_ID}`);
