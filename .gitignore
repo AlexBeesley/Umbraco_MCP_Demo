@@ -1,0 +1,5 @@
+# Local-only files (secrets live in .NET user-secrets, outside the repo)
+.env
+*.local.json
+appsettings.Local.json
+.vscode/mcp.local.json
