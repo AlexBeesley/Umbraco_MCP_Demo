@@ -1,0 +1,82 @@
+# Deploys the public hosted MCP server (mcp-hosted/) to Cloudflare Workers.
+# Needs secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, and variable SITE_URL (the Azure site's https URL);
+# skips (green) until all three are set.
+name: Deploy MCP server (Cloudflare)
+
+on:
+  push:
+    branches: [claude/umbraco-govuk-mcp-poc-v99cvr]
+    paths: [mcp-hosted/**, .github/workflows/deploy-mcp.yml]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mcp
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp-hosted
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      WRANGLER_SEND_METRICS: false
+      KV_TITLE: umbraco-govuk-mcp-oauth
+    steps:
+      - name: Check configuration
+        id: config
+        working-directory: .
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$SITE_URL" ]; then
+            echo "::notice::Skipping deploy: set the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets and the SITE_URL variable (see README, Public demo)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mcp-hosted/package-lock.json
+
+      - run: npm ci
+        if: steps.config.outputs.ready == 'true'
+
+      # OAuth tokens live in a KV namespace; find or create it and point wrangler.toml at it.
+      - name: Find or create the KV namespace
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          api="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces"
+          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          id=$(curl -fsS -H "$auth" "$api?per_page=100" | jq -r --arg t "$KV_TITLE" '.result[] | select(.title == $t) | .id' | head -n1)
+          if [ -z "$id" ]; then
+            id=$(curl -fsS -X POST -H "$auth" -H "Content-Type: application/json" \
+              --data "{\"title\":\"$KV_TITLE\"}" "$api" | jq -r '.result.id')
+            echo "Created KV namespace $KV_TITLE"
+          fi
+          [ -n "$id" ] && [ "$id" != "null" ] || { echo "::error::Could not find or create the KV namespace"; exit 1; }
+          sed -i "s/^id = \"local-oauth-kv\"/id = \"$id\"/" wrangler.toml
+          grep -q "id = \"$id\"" wrangler.toml
+
+      # The cookie key is generated once and kept, so redeploys don't sign everyone out.
+      - name: Deploy
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          secrets_file="$RUNNER_TEMP/worker-secrets.json"
+          trap 'rm -f "$secrets_file"' EXIT
+          has_cookie_key=$(npx wrangler secret list --format json 2>/dev/null \
+            | jq -r 'any(.[]; .name == "COOKIE_ENCRYPTION_KEY")' 2>/dev/null || echo false)
+          jq -n --arg url "${SITE_URL%/}" --arg key "$(openssl rand -hex 32)" --argjson keep "$has_cookie_key" \
+            '{UMBRACO_BASE_URL: $url, UMBRACO_OAUTH_CLIENT_ID: "umbraco-hosted-mcp"} + (if $keep then {} else {COOKIE_ENCRYPTION_KEY: $key} end)' \
+            > "$secrets_file"
+          npx wrangler deploy --secrets-file "$secrets_file" | tee "$RUNNER_TEMP/deploy.log"
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' "$RUNNER_TEMP/deploy.log" | head -n1)
+          echo "### Hosted MCP server: ${url}/mcp" >> "$GITHUB_STEP_SUMMARY"

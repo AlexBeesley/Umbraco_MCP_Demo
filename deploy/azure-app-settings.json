@@ -1,0 +1,30 @@
+[
+  { "name": "ASPNETCORE_ENVIRONMENT", "value": "Production", "slotSetting": false },
+  { "name": "ASPNETCORE_FORWARDEDHEADERS_ENABLED", "value": "true", "slotSetting": false },
+
+  { "name": "ConnectionStrings__umbracoDbDSN", "value": "Data Source=/tmp/umbraco.sqlite.db;Cache=Shared;Foreign Keys=True;Pooling=True", "slotSetting": false },
+  { "name": "ConnectionStrings__umbracoDbDSN_ProviderName", "value": "Microsoft.Data.Sqlite", "slotSetting": false },
+  { "name": "Umbraco__CMS__Hosting__LocalTempStorageLocation", "value": "EnvironmentTemp", "slotSetting": false },
+  { "name": "Umbraco__CMS__Examine__LuceneDirectoryFactory", "value": "TempFileSystemDirectoryFactory", "slotSetting": false },
+  { "name": "uSync__Settings__ExportOnSave", "value": "None", "slotSetting": false },
+
+  { "name": "Umbraco__CMS__Unattended__InstallUnattended", "value": "true", "slotSetting": false },
+  { "name": "Umbraco__CMS__Unattended__UnattendedUserName", "value": "Site admin", "slotSetting": false },
+  { "name": "Umbraco__CMS__Unattended__UnattendedUserEmail", "value": "{{ADMIN_EMAIL}}", "slotSetting": false },
+  { "name": "Umbraco__CMS__Unattended__UnattendedUserPassword", "value": "{{ADMIN_PASSWORD}}", "slotSetting": false },
+  { "name": "Umbraco__CMS__Imaging__HMACSecretKey", "value": "{{HMAC_KEY}}", "slotSetting": false },
+
+  { "name": "Umbraco__CMS__Global__UseHttps", "value": "true", "slotSetting": false },
+  { "name": "Umbraco__CMS__WebRouting__UmbracoApplicationUrl", "value": "{{SITE_URL}}", "slotSetting": false },
+  { "name": "Umbraco__CMS__Security__AllowConcurrentLogins", "value": "true", "slotSetting": false },
+
+  { "name": "Site__GovUkBranding", "value": "false", "slotSetting": false },
+  { "name": "Site__PhaseBannerText", "value": "Public demo. This is not a government service. Pages may be drafted by members of the public using AI.", "slotSetting": false },
+
+  { "name": "DemoAccess__Enabled", "value": "true", "slotSetting": false },
+  { "name": "DemoAccess__EditorPassword", "value": "{{DEMO_PASSWORD}}", "slotSetting": false },
+  { "name": "DemoAccess__McpUrl", "value": "{{WORKER_URL}}/mcp", "slotSetting": false },
+
+  { "name": "HostedMcp__Clients__0__Origins__0", "value": "{{WORKER_URL}}", "slotSetting": false },
+  { "name": "HostedMcp__IncludeLocalhostCallback", "value": "false", "slotSetting": false }
+]

@@ -1,0 +1,58 @@
+# Builds the Umbraco site and deploys it to the Azure Web App made by deploy/azure-setup.sh.
+# Needs secret AZURE_WEBAPP_PUBLISH_PROFILE and variable AZURE_WEBAPP_NAME; skips (green) until both are set.
+name: Deploy site (Azure)
+
+on:
+  push:
+    branches: [claude/umbraco-govuk-mcp-poc-v99cvr]
+    paths: [src/**, .github/workflows/deploy-site.yml]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Check configuration
+        id: config
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          APP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+        run: |
+          if [ -z "$PUBLISH_PROFILE" ] || [ -z "$APP_NAME" ]; then
+            echo "::notice::Skipping deploy: set the AZURE_WEBAPP_PUBLISH_PROFILE secret and AZURE_WEBAPP_NAME variable (see README, Public demo)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+
+      - uses: actions/setup-dotnet@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          dotnet-version: 10.0.x
+
+      # Build first: the GOV.UK Frontend Umbraco package copies its uSync files and CSS into the project during
+      # the build, after a single publish has already decided which files to include.
+      - name: Build and publish
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          dotnet build src/GovUkUmbraco.Web -c Release
+          dotnet publish src/GovUkUmbraco.Web -c Release -o "$RUNNER_TEMP/site"
+          test -d "$RUNNER_TEMP/site/uSync/ThePensionsRegulator.GovUk.Frontend.Umbraco" \
+            || { echo "::error::Published site is missing the package's uSync files"; exit 1; }
+
+      - uses: azure/webapps-deploy@v3
+        if: steps.config.outputs.ready == 'true'
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ runner.temp }}/site

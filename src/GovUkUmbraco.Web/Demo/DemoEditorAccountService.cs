@@ -22,6 +22,8 @@ public class DemoEditorAccountService(
 {
     public const string GroupAlias = "aiDemoEditors";
 
+    // Check often until the account exists (a fresh install imports Home a little after boot), then less often.
+    private static readonly TimeSpan SetupInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan DraftLifetime = TimeSpan.FromHours(24);
 
@@ -43,7 +45,7 @@ public class DemoEditorAccountService(
             return;
         }
 
-        using var timer = new PeriodicTimer(CheckInterval);
+        using var timer = new PeriodicTimer(SetupInterval);
         do
         {
             // On a fresh install the site content (and so the Home start node) arrives via uSync after boot.
@@ -54,8 +56,11 @@ public class DemoEditorAccountService(
 
             try
             {
-                await EnsureAccountAsync();
-                DeleteExpiredDrafts();
+                if (await EnsureAccountAsync())
+                {
+                    timer.Period = CheckInterval;
+                    DeleteExpiredDrafts();
+                }
             }
             catch (Exception ex)
             {
@@ -65,7 +70,8 @@ public class DemoEditorAccountService(
         while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
-    private async Task EnsureAccountAsync()
+    /// <returns>Whether the account is in place.</returns>
+    private async Task<bool> EnsureAccountAsync()
     {
         using var scope = scopeFactory.CreateScope();
         var services = scope.ServiceProvider;
@@ -81,7 +87,7 @@ public class DemoEditorAccountService(
         if (home is null)
         {
             logger.LogInformation("Demo editor account not created yet: the Home page doesn't exist");
-            return;
+            return false;
         }
 
         var group = await userGroupService.GetAsync(GroupAlias);
@@ -106,7 +112,7 @@ public class DemoEditorAccountService(
             if (!created.Success)
             {
                 logger.LogError("Could not create the demo editor group: {Status}", created.Status);
-                return;
+                return false;
             }
 
             group = created.Result;
@@ -130,7 +136,7 @@ public class DemoEditorAccountService(
             if (!created.Success || created.Result.CreatedUser is null)
             {
                 logger.LogError("Could not create the demo editor user: {Status}", created.Status);
-                return;
+                return false;
             }
 
             user = created.Result.CreatedUser;
@@ -154,6 +160,8 @@ public class DemoEditorAccountService(
                 logger.LogError("Could not reset the demo editor password: {Status}", changed.Status);
             }
         }
+
+        return true;
     }
 
     private void DeleteExpiredDrafts()
