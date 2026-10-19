@@ -21,14 +21,13 @@ Ground rules:
 
 Steps:
 
-1. Prerequisites. Check for and, if they're missing, help me install: git, Azure CLI (az), GitHub CLI (gh), Node.js 22+, and the .NET 10 SDK (only needed for running things locally). Clone the repo if it isn't open already, and update it to the latest commit. If git refuses because src/GovUkUmbraco.Web/appsettings.json has local changes, follow the "If git won't update" section of docs/vscode-agent-setup-prompt.md.
+1. Prerequisites. Check for and, if they're missing, help me install: git, Azure CLI (az) and GitHub CLI (gh). Node.js 22+ is needed only for the end-to-end test in step 6. If a company policy (such as AppLocker) blocks a tool, don't try to get around it: tell me and use the browser alternative in docs/vscode-agent-setup-prompt.md. Clone the repo if it isn't open already, and update it to the latest commit. If git refuses because src/GovUkUmbraco.Web/appsettings.json has local changes, follow the "If git won't update" section of docs/vscode-agent-setup-prompt.md.
 
-2. Cloudflare.
-   - Run "npx wrangler login" from the mcp-hosted folder after "npm ci".
-   - Get my account ID with "npx wrangler whoami".
-   - Get my workers.dev subdomain. If I don't have one, tell me to open Workers & Pages in the Cloudflare dashboard once to create it.
+2. Cloudflare. This needs no local tools: the deploy workflow runs Wrangler on GitHub's runners, so don't run wrangler on this machine.
+   - Ask me to sign in at https://dash.cloudflare.com in my browser and open Workers & Pages (this creates my workers.dev subdomain if I don't have one yet).
+   - Ask me for the subdomain and the Account ID shown there (neither is a secret).
    - The MCP URL will be https://umbraco-govuk-mcp.<subdomain>.workers.dev
-   - Ask me to create an API token at https://dash.cloudflare.com/profile/api-tokens using the "Edit Cloudflare Workers" template. Have me paste it straight into "gh secret set CLOUDFLARE_API_TOKEN", not into chat.
+   - Ask me to create an API token at https://dash.cloudflare.com/profile/api-tokens using the "Edit Cloudflare Workers" template. Run "gh secret set CLOUDFLARE_API_TOKEN" so it prompts me and I paste the token there, not into chat.
    - Set CLOUDFLARE_ACCOUNT_ID with gh secret set.
 
 3. Azure.
@@ -65,7 +64,7 @@ Steps:
 7. Finish by giving me a short summary:
    - the site URL, backoffice URL and MCP URL
    - how to add the MCP URL in Claude (Settings > Connectors > Add custom connector) and in ChatGPT (developer mode connectors)
-   - how to tear it all down: az group delete -n umbraco-mcp-demo, and npx wrangler delete in mcp-hosted
+   - how to tear it all down: az group delete -n umbraco-mcp-demo, and delete the umbraco-govuk-mcp worker in the Cloudflare dashboard
    - anything you had to change or work around
 ````
 
@@ -84,6 +83,15 @@ The appsettings.json change is Umbraco writing settings on first run (README got
 ````
 
 This keeps your local site's image links working, and the old file stays in the git stash rather than being deleted. To stop it happening on a new machine, run `scripts/set-dev-secrets.sh` (or the PowerShell version in the README) before the site's first run.
+
+## If your machine blocks tools (AppLocker or similar)
+
+Don't try to get around the block. None of the deploy steps need anything except `gh`:
+
+- **Cloudflare:** no local tools needed (the workflow runs Wrangler on GitHub).
+- **Azure:** if `az` is blocked, run `deploy/azure-setup.sh` in **Azure Cloud Shell** in the browser, as the README describes. Then add `AZURE_WEBAPP_PUBLISH_PROFILE` in GitHub's web UI (Settings › Secrets and variables › Actions).
+- **GitHub:** if `gh` is blocked, add every secret and variable in that same web page, and start the workflows from the **Actions** tab.
+- **Test:** if Node is blocked, skip `npm run test:hosted-mcp`. Check by hand instead: add the MCP URL to Claude or ChatGPT and ask it to create a draft page.
 
 ## Notes
 
