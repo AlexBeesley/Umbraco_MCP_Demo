@@ -159,6 +159,8 @@ Umbraco site on Azure App Service  (Umbraco.Mcp.HostedAuth registers the worker 
 
 ### Deploy it (about 20 minutes, works from a phone browser)
 
+Or hand it to an agent in VS Code: paste the prompt in [docs/vscode-agent-setup-prompt.md](docs/vscode-agent-setup-prompt.md).
+
 1. **Cloudflare** (free plan): sign up at <https://dash.cloudflare.com>, open **Workers & Pages** once so your `*.workers.dev` subdomain is created, and note it. Your MCP server will be `https://umbraco-govuk-mcp.<subdomain>.workers.dev`.
    Then create an API token: **My Profile › API Tokens › Create Token › "Edit Cloudflare Workers"** template. Note the token and your **Account ID** (shown on the Workers & Pages overview).
 2. **Azure**: sign in at <https://portal.azure.com> and open **Cloud Shell** (Bash). Run:
