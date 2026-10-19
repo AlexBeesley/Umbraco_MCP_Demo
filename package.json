@@ -9,6 +9,7 @@
   "scripts": {
     "test:smoke": "node tests/e2e/backoffice-smoke.mjs",
     "test:a11y": "node tests/e2e/a11y.mjs",
+    "test:hosted-mcp": "node tests/e2e/hosted-mcp.mjs",
     "mcp:create-api-user": "node scripts/create-mcp-api-user.mjs",
     "mcp:demo": "node scripts/mcp-demo.mjs"
   },

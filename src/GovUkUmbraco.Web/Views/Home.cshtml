@@ -1,5 +1,10 @@
-﻿@inherits UmbracoViewPage<Home>
+@inherits UmbracoViewPage<Home>
+@using GovUkUmbraco.Web.Demo
+@using Microsoft.Extensions.Options
+@inject IOptions<DemoAccessOptions> DemoAccess
 @{
+    var demo = DemoAccess.Value;
+    var showDemo = demo.Enabled && !string.IsNullOrWhiteSpace(demo.McpUrl) && !string.IsNullOrWhiteSpace(demo.EditorPassword);
     var children = Model.Children()?.ToList() ?? [];
     var contentPages = children.Where(x => x.ContentType.Alias == ContentPage.ModelTypeAlias).ToList();
     // The panel page is the "success" page that the example forms redirect to, so it is not listed.
@@ -19,6 +24,38 @@
         <govuk-inset-text>
             Every page on this site is managed in Umbraco. Sign in to the <a class="govuk-link" href="/umbraco">Umbraco backoffice</a> to edit it.
         </govuk-inset-text>
+
+        @if (showDemo)
+        {
+            <h2 class="govuk-heading-l">Try editing this site with AI</h2>
+            <p class="govuk-body">Connect your AI assistant to this site, sign in with the demo account, then ask it to write or change a page. Changes are saved as drafts. Nothing goes live until someone reviews it.</p>
+            <govuk-summary-list>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>MCP server</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value><code class="demo-code">@demo.McpUrl</code></govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Email</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value><code class="demo-code">@demo.EditorEmail</code></govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Password</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value><code class="demo-code">@demo.EditorPassword</code></govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+            </govuk-summary-list>
+            <govuk-details>
+                <govuk-details-summary>How to connect your AI assistant</govuk-details-summary>
+                <govuk-details-text>
+                    <ol class="govuk-list govuk-list--number">
+                        <li>In an AI assistant that supports remote MCP servers, add a custom connector (sometimes called an MCP server) with the address above. Claude, ChatGPT and VS Code all support this.</li>
+                        <li>When it asks you to sign in, use the demo email and password.</li>
+                        <li>Ask it something like "List the pages on the site" or "Create a page under Home called Opening hours".</li>
+                        <li>To see your drafts, <a class="govuk-link" href="/umbraco">sign in to the Umbraco backoffice</a> with the same details.</li>
+                    </ol>
+                    <p class="govuk-body">The demo account can create and edit pages under Home. It cannot publish, delete or change how the site works. Anything you write can be seen by other people using the demo. New pages that aren't published are deleted after 24 hours.</p>
+                </govuk-details-text>
+            </govuk-details>
+        }
 
         <h2 class="govuk-heading-l">Component examples</h2>
         <p class="govuk-body">These pages are built from GOV.UK Design System blocks in Umbraco's block list and block grid editors.</p>

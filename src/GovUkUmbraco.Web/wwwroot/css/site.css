@@ -5,3 +5,13 @@
 .govuk-panel__body .govuk-body {
     color: inherit;
 }
+
+/* Neutral header used when Site:GovUkBranding is false (public deployments). */
+.site-header { background: #26323b; color: #ffffff; }
+.site-header__inner { padding-block: 14px; }
+.site-header__name { color: #ffffff; font-family: arial, sans-serif; font-weight: 700; font-size: 1.25rem; line-height: 1.2; text-decoration: none; }
+.site-header__name:hover { text-decoration: underline; text-decoration-thickness: 3px; }
+.site-header__name:focus { outline: 3px solid transparent; color: #0b0c0c; background-color: #ffdd00; box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c; text-decoration: none; }
+
+/* Values people copy from the home page's AI demo panel. */
+.demo-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; overflow-wrap: anywhere; }

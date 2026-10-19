@@ -12,6 +12,7 @@
     <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" />
     <PackageReference Include="ThePensionsRegulator.GovUk.Frontend.Umbraco" />
     <PackageReference Include="uSync" />
+    <PackageReference Include="Umbraco.Mcp.HostedAuth" />
   </ItemGroup>
 
   <PropertyGroup>

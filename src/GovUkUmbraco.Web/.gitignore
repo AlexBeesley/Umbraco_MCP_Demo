@@ -491,6 +491,7 @@ umbraco-package-schema.json
 # uSync exports every change made in Umbraco, including the throwaway page created by `npm run mcp:demo`.
 # Keep it out of source control so a fresh clone still demonstrates the "create" step.
 /uSync/v17/Content/created-by-mcp*.config
+/uSync/v17/Content/hosted-mcp-test*.config
 
 # ModelsBuilder "models out of date" marker. uSync writes it on first boot even though the committed models match.
 /Models/ModelsBuilder/ood.flag

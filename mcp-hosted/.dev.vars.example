@@ -1,0 +1,7 @@
+# Local settings for `npm run dev`. Copy to .dev.vars (gitignored).
+# The site must be running with ASPNETCORE_ENVIRONMENT=Development, which allows the token
+# exchange over HTTP (workerd can't verify the self-signed dev certificate).
+UMBRACO_BASE_URL=http://localhost:60376
+UMBRACO_OAUTH_CLIENT_ID=umbraco-hosted-mcp
+# openssl rand -hex 32
+COOKIE_ENCRYPTION_KEY=replace-me

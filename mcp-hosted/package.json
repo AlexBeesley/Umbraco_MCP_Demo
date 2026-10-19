@@ -1,0 +1,22 @@
+{
+  "name": "umbraco-govuk-hosted-mcp",
+  "private": true,
+  "type": "module",
+  "description": "Public hosted Umbraco MCP server (Cloudflare Worker) for the GOV.UK Umbraco prototype",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "@umbraco-cms/mcp-dev": "17.6.11",
+    "@umbraco-cms/mcp-hosted": "1.0.0-beta.46",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.2.3",
+    "agents": "^0.6.0",
+    "wrangler": "^4.69.0"
+  }
+}

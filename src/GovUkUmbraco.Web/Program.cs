@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using OpenIddict.Server.AspNetCore;
 using ThePensionsRegulator.GovUk.Frontend.Umbraco;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Web;
@@ -20,7 +21,32 @@ builder.CreateUmbracoBuilder()
     .AddComposers()
     .Build();
 
+// Local hosted-MCP testing only: the Cloudflare Workers runtime (wrangler dev) can't verify the
+// self-signed dev certificate, so it exchanges OAuth tokens with the site over plain HTTP.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddOpenIddict()
+        .AddServer(options => options.UseAspNetCore().DisableTransportSecurityRequirement());
+}
+
 WebApplication app = builder.Build();
+
+// Public deployments use neutral branding: the GOV.UK crown, logotype and GDS Transport typeface are
+// reserved for services on GOV.UK. Refusing these assets makes the stylesheet fall back to Arial.
+if (!app.Configuration.GetValue("Site:GovUkBranding", true))
+{
+    app.Use(async (context, next) =>
+    {
+        var path = context.Request.Path;
+        if (path.StartsWithSegments("/assets/fonts") || path.StartsWithSegments("/assets/images/govuk-crest.svg"))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        await next();
+    });
+}
 
 // Serves the GOV.UK Frontend JS/CSS/fonts and maps Umbraco-configured validation messages
 // onto DataAnnotations attributes. Must run before Umbraco's own middleware.
