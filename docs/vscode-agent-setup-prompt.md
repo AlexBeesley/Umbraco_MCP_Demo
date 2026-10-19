@@ -21,7 +21,7 @@ Ground rules:
 
 Steps:
 
-1. Prerequisites. Check for and, if they're missing, help me install: git, Azure CLI (az), GitHub CLI (gh), Node.js 22+, and the .NET 10 SDK (only needed for running things locally). Clone the repo if it isn't open already.
+1. Prerequisites. Check for and, if they're missing, help me install: git, Azure CLI (az), GitHub CLI (gh), Node.js 22+, and the .NET 10 SDK (only needed for running things locally). Clone the repo if it isn't open already, and update it to the latest commit. If git refuses because src/GovUkUmbraco.Web/appsettings.json has local changes, follow the "If git won't update" section of docs/vscode-agent-setup-prompt.md.
 
 2. Cloudflare.
    - Run "npx wrangler login" from the mcp-hosted folder after "npm ci".
@@ -68,6 +68,22 @@ Steps:
    - how to tear it all down: az group delete -n umbraco-mcp-demo, and npx wrangler delete in mcp-hosted
    - anything you had to change or work around
 ````
+
+## If git won't update: `appsettings.json` has local changes
+
+If you've run the site locally before, the agent may report that the checkout is behind and that git won't update it because of local changes to `src/GovUkUmbraco.Web/appsettings.json`. Umbraco causes this: on first run it writes a generated image-signing key (`HMACSecretKey`) into that file if one isn't already set, and sometimes a database connection string too (README gotcha 1). The key is a secret, so don't commit it. Paste this to the agent:
+
+````text
+The appsettings.json change is Umbraco writing settings on first run (README gotcha 1). Fix it like this:
+1. Run git diff src/GovUkUmbraco.Web/appsettings.json, but show me only the names of the changed settings, never their values.
+2. If it's only Umbraco:CMS:Imaging:HMACSecretKey and/or ConnectionStrings: copy the HMAC key into user-secrets without printing it:
+   dotnet user-secrets set "Umbraco:CMS:Imaging:HMACSecretKey" "<value from the diff>" --project src/GovUkUmbraco.Web
+   If it's anything else, stop and show me the setting names first.
+3. Run git stash push src/GovUkUmbraco.Web/appsettings.json, then git pull.
+4. Check that the mcp-hosted folder now exists, then carry on from step 2 of the setup (Cloudflare).
+````
+
+This keeps your local site's image links working, and the old file stays in the git stash rather than being deleted. To stop it happening on a new machine, run `scripts/set-dev-secrets.sh` (or the PowerShell version in the README) before the site's first run.
 
 ## Notes
 
